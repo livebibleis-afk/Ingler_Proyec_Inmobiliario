@@ -2,31 +2,71 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Plano Técnico Interactivo - 7x17m</title>
     <style>
         :root {
             --bg-color: #ecf0f1;
             --panel-color: #2c3e50;
             --accent-color: #e67e22;
+            --text-color: #333333;
+            --panel-text: #ffffff;
         }
+        * { box-sizing: border-box; }
+        
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             display: flex;
+            flex-direction: row;
             background-color: var(--bg-color);
             height: 100vh;
             overflow: hidden;
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+        
+        /* ================= ESTILOS MODO OSCURO ================= */
+        body.dark-mode {
+            --bg-color: #121212;
+            --panel-color: #1e1e1e;
+            --text-color: #ffffff;
+        }
+        body.dark-mode svg {
+            background-color: #1a1a1a !important;
+        }
+        body.dark-mode .txt-cota, body.dark-mode .txt-ambiente, body.dark-mode .txt-leyenda {
+            fill: #ffffff !important;
+        }
+        body.dark-mode .txt-subtexto {
+            fill: #cccccc !important;
+        }
+        body.dark-mode #cuadricula rect {
+            stroke: #2a2a2a !important;
+        }
+        body.dark-mode .vano-limpio {
+            fill: #1a1a1a !important;
+        }
+        body.dark-mode #capa-leyenda rect {
+            fill: #242424 !important;
+            stroke: #ffffff !important;
+        }
+        body.dark-mode #capa-entorno rect[fill="#e0e0e0"] {
+            fill: #2d2d2d !important;
+            stroke: #444444 !important;
+        }
+        
         /* Panel Lateral */
         #controles {
             width: 320px;
+            flex-shrink: 0;
             background-color: var(--panel-color);
-            color: white;
+            color: var(--panel-text);
             padding: 20px;
             box-shadow: 3px 0 15px rgba(0,0,0,0.2);
             z-index: 10;
             overflow-y: auto;
+            transition: background-color 0.3s ease;
         }
         #controles h2 { 
             border-bottom: 2px solid var(--accent-color); 
@@ -34,11 +74,23 @@
             font-size: 1.2rem; 
             margin-top: 0;
         }
+        #controles h3 {
+            font-size: 14px; 
+            margin-top: 20px; 
+            color: #bdc3c7;
+            border-bottom: 1px solid #34495e;
+            padding-bottom: 5px;
+        }
+        
+        .botones-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .btn-capa {
-            display: block;
             width: 100%;
             padding: 12px;
-            margin-bottom: 8px;
             background: #34495e;
             border: 1px solid #2c3e50;
             color: white;
@@ -47,12 +99,30 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 14px;
+            display: flex;
+            align-items: center;
         }
         .btn-capa:hover { background: #415b76; }
         .btn-capa.activa { 
             border-left: 5px solid var(--accent-color); 
             background: #1a252f; 
         }
+
+        /* Botones Especiales de Herramientas */
+        .btn-utilidad {
+            background: #27ae60;
+            border: 1px solid #1e8449;
+            font-weight: bold;
+            justify-content: center;
+        }
+        .btn-utilidad:hover { background: #2ecc71; }
+        .btn-dark-toggle {
+            background: #7f8c8d;
+            border: 1px solid #626567;
+            font-weight: bold;
+            justify-content: center;
+        }
+        .btn-dark-toggle:hover { background: #95a5a6; }
 
         /* Contenedor del SVG */
         #lienzo {
@@ -62,12 +132,15 @@
             align-items: center;
             padding: 20px;
             overflow: auto;
+            width: calc(100% - 320px);
         }
         svg {
             background-color: white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             max-height: 95vh;
             width: auto;
+            max-width: 100%;
+            transition: background-color 0.3s ease;
         }
         
         /* Sistema de Capas SVG */
@@ -97,6 +170,54 @@
         .txt-leyenda { fill: #2c3e50; font-family: 'Arial', sans-serif; font-size: 15px; font-weight: bold; }
         .punto-vertice { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
         .texto-vertice { fill: #c0392b; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; }
+
+        /* ================= REGLAS DE ADAPTACIÓN PARA MÓVILES ================= */
+        @media (max-width: 850px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                overflow: auto;
+            }
+            #lienzo {
+                width: 100%;
+                min-height: 65vh;
+                padding: 10px;
+                order: 1;
+            }
+            svg {
+                height: 100%;
+                max-height: 80vh;
+            }
+            #controles {
+                width: 100%;
+                order: 2;
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+                border-top: 4px solid var(--accent-color);
+                padding: 15px;
+            }
+            .botones-grupo {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 8px;
+            }
+        }
+
+        /* ================= REGLAS ESTRICTAS DE IMPRESIÓN ================= */
+        @media print {
+            #controles { display: none !important; }
+            body { background: white !important; color: black !important; display: block !important; height: auto !important; }
+            #lienzo { width: 100% !important; padding: 0 !important; display: block !important; }
+            svg { box-shadow: none !important; max-height: 100% !important; width: 100% !important; background-color: white !important; }
+            
+            /* Forzar visualización de colores claros impresos planos */
+            #cuadricula rect { stroke: #e5e8e8 !important; }
+            .txt-cota, .txt-ambiente, .txt-leyenda { fill: #2c3e50 !important; }
+            .txt-subtexto { fill: #626567 !important; }
+            .vano-limpio { fill: #ffffff !important; }
+            #capa-leyenda rect { fill: #ffffff !important; stroke: #2c3e50 !important; }
+            #capa-entorno rect[fill="#e0e0e0"] { fill: #e0e0e0 !important; stroke: #bdc3c7 !important; }
+        }
     </style>
 </head>
 <body>
@@ -104,21 +225,33 @@
     <div id="controles">
         <h2>CONTROL DE CAPAS</h2>
         
-        <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación (Colores)</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-muros', this)">🧱 Muros y Estructura</button>
+        <h3>Herramientas Especiales</h3>
+        <div class="botones-grupo" style="margin-bottom: 15px;">
+            <button class="btn-capa btn-dark-toggle" onclick="alternarModoOscuro(this)">🌙 Modo Oscuro</button>
+            <button class="btn-capa btn-utilidad" onclick="imprimirPlano()">🖨️ Imprimir Plano</button>
+        </div>
+
+        <h3>Capas del Sistema</h3>
+        <div class="botones-grupo">
+            <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación (Colores)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-muros', this)">🧱 Muros y Estructura</button>
+        </div>
         
-        <h3 style="font-size: 14px; margin-top: 20px; color: #bdc3c7;">Distribución Específica</h3>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-escalera', this)">🪜 Escalera en "U"</button>
-        <button class="btn-capa" onclick="alternarCapa('capa-baño', this)">🚽 Baño (Bajo escalera)</button>
+        <h3>Distribución Específica</h3>
+        <div class="botones-grupo">
+            <button class="btn-capa activa" onclick="alternarCapa('capa-escalera', this)">🪜 Escalera en "U"</button>
+            <button class="btn-capa" onclick="alternarCapa('capa-baño', this)">🚽 Baño (Bajo escalera)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-acotado', this)">📏 Cotas (Medidas)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices (A-T)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Textos de Ambientes</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Cuadro de Leyenda</button>
+        </div>
         
-        <button class="btn-capa activa" onclick="alternarCapa('capa-acotado', this)">📏 Cotas (Medidas)</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices (A-T)</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Textos de Ambientes</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Cuadro de Leyenda</button>
-        
-        <h3 style="font-size: 14px; margin-top: 20px; color: #bdc3c7;">Exteriores</h3>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-entorno', this)">🌳 Calle y Vereda</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-servicios', this)">⚡ Medidores en T (Luz/Gas)</button>
+        <h3>Exteriores</h3>
+        <div class="botones-grupo">
+            <button class="btn-capa activa" onclick="alternarCapa('capa-entorno', this)">🌳 Calle y Vereda</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-servicios', this)">⚡ Medidores en T</button>
+        </div>
     </div>
 
     <div id="lienzo">
@@ -352,6 +485,7 @@
     </div>
 
     <script>
+        // Función para controlar las capas SVG individuales
         function alternarCapa(idCapa, botonElemento) {
             const capa = document.getElementById(idCapa);
             if (capa.classList.contains('capa-oculta')) {
@@ -361,6 +495,21 @@
                 capa.classList.add('capa-oculta');
                 botonElemento.classList.remove('activa');
             }
+        }
+
+        // Función para cambiar de Modo Claro a Modo Oscuro
+        function alternarModoOscuro(boton) {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                boton.textContent = '☀️ Modo Claro';
+            } else {
+                boton.textContent = '🌙 Modo Oscuro';
+            }
+        }
+
+        // Función para mandar a imprimir directamente
+        function imprimirPlano() {
+            window.print();
         }
     </script>
 
