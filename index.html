@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Plano Técnico Interactivo - 7x17m</title>
+    <title>Plano Técnico Interactivo - Proyecto Ingler</title>
     <style>
         :root {
             --bg-color: #ecf0f1;
@@ -21,7 +21,7 @@
             flex-direction: row;
             background-color: var(--bg-color);
             height: 100vh;
-            overflow: hidden; /* En PC evitamos el scroll general */
+            overflow: hidden;
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
@@ -48,10 +48,10 @@
             color: var(--panel-text);
             padding: 20px;
             box-shadow: 3px 0 15px rgba(0,0,0,0.2);
-            z-index: 9999; /* FORZAMOS QUE ESTÉ POR ENCIMA DEL SVG */
+            z-index: 9999;
             position: relative;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* Desplazamiento suave en iOS */
+            -webkit-overflow-scrolling: touch;
             transition: background-color 0.3s ease;
         }
         #controles h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; font-size: 1.2rem; margin-top: 0; }
@@ -72,10 +72,14 @@
             font-size: 14px;
             display: flex;
             align-items: center;
-            touch-action: manipulation; /* Evita el retraso de 300ms al tocar en iPhone */
+            touch-action: manipulation;
         }
         .btn-capa:hover { background: #415b76; }
         .btn-capa.activa { border-left: 5px solid var(--accent-color); background: #1a252f; }
+
+        /* Botones de Navegación de Pisos */
+        .btn-piso { background: #16a085; font-weight: bold; justify-content: center; }
+        .btn-piso.activa { background: #27ae60; border-left: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
 
         .btn-utilidad { background: #27ae60; border: 1px solid #1e8449; font-weight: bold; justify-content: center; }
         .btn-utilidad:hover { background: #2ecc71; }
@@ -105,7 +109,7 @@
         
         /* Sistema de Capas SVG */
         .capa-svg { transition: opacity 0.3s ease; opacity: 1; }
-        .capa-oculta { opacity: 0; pointer-events: none; }
+        .capa-oculta { opacity: 0; pointer-events: none; display: none; }
 
         /* Estilos Internos del Plano */
         .plano-fondo { fill: url(#cuadricula); }
@@ -115,6 +119,7 @@
         .zona-exterior { fill: #e8f8f5; fill-opacity: 0.85; }
         .zona-circulacion { fill: #eaeded; fill-opacity: 0.85; }
         .muro-carga { fill: none; stroke: #2c3e50; stroke-width: 16; stroke-linecap: square; stroke-linejoin: miter; }
+        .muro-alero { fill: none; stroke: #e67e22; stroke-width: 4; stroke-dasharray: 8,4; }
         .vano-limpio { fill: #ffffff; stroke: none; }
         .ventana-linea { fill: #eaf2f8; stroke: #2980b9; stroke-width: 4; }
         .ventana-vidrio { stroke: #3498db; stroke-width: 1; }
@@ -131,42 +136,17 @@
         .punto-vertice { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
         .texto-vertice { fill: #c0392b; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; }
 
-        /* ================= PARCHE DEFINITIVO PARA iPHONE/SAFARI ================= */
+        /* ================= MEDIA QUERIES iPHONE/SAFARI ================= */
         @media (max-width: 850px) {
-            body {
-                flex-direction: column;
-                height: auto;
-                min-height: 100vh;
-                /* ESTO LIBERA EL SCROLL EN IOS */
-                overflow: auto !important; 
-                -webkit-overflow-scrolling: touch; 
-            }
-            #lienzo {
-                width: 100%;
-                height: auto;
-                min-height: 50vh;
-                padding: 10px;
-                order: 1;
-                display: block; /* Anula conflictos de flexbox en Safari */
-            }
-            svg {
-                width: 100%;
-                height: auto; /* Permite que iOS escale naturalmente sin desbordar */
-                max-height: 70vh;
-            }
-            #controles {
-                width: 100%;
-                order: 2;
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-                border-top: 4px solid var(--accent-color);
-                padding: 15px;
-                display: block;
-            }
-            .botones-grupo {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 8px;
-            }
+            body { flex-direction: column; height: auto; min-height: 100vh; overflow: auto !important; -webkit-overflow-scrolling: touch; }
+            #lienzo { width: 100%; height: auto; min-height: 50vh; padding: 10px; order: 1; display: block; }
+            svg { width: 100%; height: auto; max-height: 70vh; }
+            #controles { width: 100%; order: 2; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); border-top: 4px solid var(--accent-color); padding: 15px; display: block; }
+            .botones-grupo { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+        }
+
+        @media (max-width: 480px) {
+            .botones-grupo { grid-template-columns: repeat(2, 1fr); }
         }
 
         /* ================= REGLAS DE IMPRESIÓN ================= */
@@ -175,12 +155,6 @@
             body { background: white !important; color: black !important; display: block !important; height: auto !important; overflow: visible !important; }
             #lienzo { width: 100% !important; padding: 0 !important; display: block !important; height: auto !important; }
             svg { box-shadow: none !important; max-height: none !important; width: 100% !important; background-color: white !important; }
-            #cuadricula rect { stroke: #e5e8e8 !important; }
-            .txt-cota, .txt-ambiente, .txt-leyenda { fill: #2c3e50 !important; }
-            .txt-subtexto { fill: #626567 !important; }
-            .vano-limpio { fill: #ffffff !important; }
-            #capa-leyenda rect { fill: #ffffff !important; stroke: #2c3e50 !important; }
-            #capa-entorno rect[fill="#e0e0e0"] { fill: #e0e0e0 !important; stroke: #bdc3c7 !important; }
         }
     </style>
 </head>
@@ -190,36 +164,38 @@
         <h2>CONTROL DE CAPAS</h2>
         
         <h3>Herramientas Especiales</h3>
-        <div class="botones-grupo" style="margin-bottom: 15px;">
+        <div class="botones-grupo" style="margin-bottom: 10px;">
             <button class="btn-capa btn-dark-toggle" onclick="alternarModoOscuro(this)">🌙 Modo Oscuro</button>
             <button class="btn-capa btn-utilidad" onclick="imprimirPlano()">🖨️ Imprimir Plano</button>
         </div>
 
+        <h3>Selección de Planta</h3>
+        <div class="botones-grupo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+            <button id="btn-p1" class="btn-capa btn-piso activa" onclick="seleccionarPiso(1)">1° Piso</button>
+            <button id="btn-p2" class="btn-capa btn-piso" onclick="seleccionarPiso(2)">2° Piso</button>
+        </div>
+
         <h3>Capas del Sistema</h3>
         <div class="botones-grupo">
-            <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación (Colores)</button>
             <button class="btn-capa activa" onclick="alternarCapa('capa-muros', this)">🧱 Muros y Estructura</button>
-        </div>
-        
-        <h3>Distribución Específica</h3>
-        <div class="botones-grupo">
-            <button class="btn-capa activa" onclick="alternarCapa('capa-escalera', this)">🪜 Escalera en "U"</button>
-            <button class="btn-capa" onclick="alternarCapa('capa-baño', this)">🚽 Baño (Bajo escalera)</button>
             <button class="btn-capa activa" onclick="alternarCapa('capa-acotado', this)">📏 Cotas (Medidas)</button>
-            <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices (A-T)</button>
-            <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Ambientes</button>
-            <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Leyenda</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices Técnicos</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Ambientes y Notas</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Leyenda General</button>
         </div>
         
-        <h3>Exteriores</h3>
+        <h3>Elementos Especiales</h3>
         <div class="botones-grupo">
-            <button class="btn-capa activa" onclick="alternarCapa('capa-entorno', this)">🌳 Calle y Vereda</button>
-            <button class="btn-capa activa" onclick="alternarCapa('capa-servicios', this)">⚡ Medidores en T</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-escalera', this)">🪜 Escalera Principal</button>
+            <button id="btn-capa-baño-control" class="btn-capa" onclick="alternarCapa('capa-baño-p1', this)">🚽 Baño P1 (Bajo Escalera)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-entorno', this)">🌳 Vereda y Pista</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-servicios', this)">⚡ Medidores Acometida</button>
         </div>
     </div>
 
     <div id="lienzo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 2150" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 2200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
           <defs>
             <pattern id="cuadricula" width="100" height="100" patternUnits="userSpaceOnUse">
               <rect width="100" height="100" fill="none" stroke="#e5e8e8" stroke-width="1"/>
@@ -229,125 +205,165 @@
             </marker>
           </defs>
 
-          <rect width="800" height="2150" class="plano-fondo"/>
+          <rect width="800" height="2200" class="plano-fondo"/>
 
           <g id="capa-entorno" class="capa-svg">
-            <rect x="10" y="1800" width="850" height="100" fill="#e0e0e0" stroke="#bdc3c7" stroke-width="2"/>
-            <line x1="10" y1="1850" x2="860" y2="1850" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="20,5"/>
-            <rect x="10" y="1900" width="850" height="20" fill="#27ae60" stroke="#2ecc71"/>
-            <rect x="10" y="1920" width="850" height="230" fill="#d4b895"/>
-            <circle cx="200" cy="2000" r="2" fill="#a07a50"/>
-            <circle cx="450" cy="2100" r="3" fill="#a07a50"/>
-            <circle cx="700" cy="1980" r="1.5" fill="#a07a50"/>
-            <text x="430" y="2050" class="txt-ambiente" fill="#8c6239">PISTA DE TIERRA COMPACTADA</text>
+            <rect x="10" y="1850" width="850" height="100" fill="#e0e0e0" stroke="#bdc3c7" stroke-width="2"/>
+            <line x1="10" y1="1900" x2="860" y2="1900" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="20,5"/>
+            <rect x="10" y="1950" width="850" height="20" fill="#27ae60" stroke="#2ecc71"/>
+            <rect x="10" y="1970" width="850" height="230" fill="#d4b895"/>
+            <text x="430" y="2080" class="txt-ambiente" fill="#8c6239">PISTA DE TIERRA COMPACTADA</text>
           </g>
 
-          <g id="capa-zonificacion" class="capa-svg">
-            <rect x="100" y="100" width="350" height="400" class="zona-intima"/> 
-            <rect x="450" y="100" width="350" height="400" class="zona-intima"/> 
-            <rect x="100" y="500" width="250" height="250" class="zona-servicio"/> 
-            <rect x="350" y="500" width="150" height="250" class="zona-exterior"/> 
-            <rect x="500" y="500" width="300" height="250" class="zona-servicio"/> 
-            <rect x="100" y="750" width="300" height="650" class="zona-social"/> 
-            <rect x="400" y="750" width="400" height="650" class="zona-servicio"/> 
-            <rect x="350" y="750" width="150" height="150" class="zona-circulacion"/> 
-            <rect x="100" y="1400" width="350" height="400" class="zona-exterior"/> 
-            <rect x="450" y="1400" width="100" height="400" class="zona-circulacion"/> 
-            <rect x="550" y="1400" width="250" height="400" class="zona-intima"/> 
+          <g id="grupo-piso1">
+              <g id="capa-zonificacion-p1">
+                <rect x="100" y="100" width="350" height="400" class="zona-intima"/> 
+                <rect x="450" y="100" width="350" height="400" class="zona-intima"/> 
+                <rect x="100" y="500" width="250" height="250" class="zona-servicio"/> 
+                <rect x="350" y="500" width="150" height="250" class="zona-exterior"/> 
+                <rect x="500" y="500" width="300" height="250" class="zona-servicio"/> 
+                <rect x="100" y="750" width="300" height="650" class="zona-social"/> 
+                <rect x="400" y="750" width="400" height="650" class="zona-servicio"/> 
+                <rect x="350" y="750" width="150" height="150" class="zona-circulacion"/> 
+                <rect x="100" y="1400" width="350" height="400" class="zona-exterior"/> 
+                <rect x="450" y="1400" width="100" height="400" class="zona-circulacion"/> 
+                <rect x="550" y="1400" width="250" height="400" class="zona-intima"/> 
+              </g>
+
+              <g id="capa-baño-p1" class="capa-svg capa-oculta">
+                <path d="M 550 1500 L 710 1500" fill="none" stroke="#7f8c8d" stroke-width="8" stroke-dasharray="10,5"/>
+                <ellipse cx="600" cy="1440" rx="12" ry="16" fill="white" stroke="#2980b9" stroke-width="2"/>
+                <rect x="585" y="1410" width="30" height="15" fill="white" stroke="#2980b9" stroke-width="2"/>
+                <rect x="670" y="1410" width="30" height="20" rx="5" fill="white" stroke="#2980b9" stroke-width="2"/>
+                <text x="630" y="1480" class="txt-subtexto" fill="#2980b9" font-weight="bold">1/2 BAÑO P1</text>
+              </g>
+
+              <g id="capa-muros-p1" class="muro-carga">
+                <polygon points="100,100 800,100 800,1800 100,1800"/>
+                <path d="M 100 500 L 800 500"/>
+                <path d="M 100 750 L 350 750 M 500 750 L 800 750"/>
+                <path d="M 100 1400 L 800 1400"/>
+                <path d="M 450 100 L 450 500"/>
+                <path d="M 350 500 L 350 900"/>
+                <path d="M 500 500 L 500 750"/>
+                <path d="M 450 1400 L 450 1800"/>
+              </g>
+
+              <g id="capa-vanos-p1">
+                <g class="vano-limpio">
+                    <rect x="180" y="490" width="100" height="20"/> <rect x="520" y="490" width="100" height="20"/> 
+                    <rect x="340" y="550" width="20" height="100"/> <rect x="490" y="550" width="20" height="100"/> 
+                    <rect x="410" y="740" width="80" height="20"/> <rect x="260" y="740" width="80" height="20"/>  
+                    <rect x="510" y="740" width="80" height="20"/> <rect x="460" y="1390" width="80" height="20"/>  
+                    <rect x="130" y="1390" width="180" height="20"/> <rect x="100" y="1790" width="350" height="20"/> 
+                    <rect x="450" y="1790" width="100" height="20"/> <rect x="550" y="1790" width="70" height="20"/> 
+                </g>
+                <g class="ventana-linea">
+                  <rect x="180" y="496" width="100" height="8"/><rect x="520" y="496" width="100" height="8"/>
+                  <rect x="346" y="550" width="8" height="100"/><rect x="496" y="550" width="8" height="100"/>
+                  <rect x="410" y="746" width="80" height="8"/><rect x="130" y="1396" width="180" height="8"/>
+                  <rect x="550" y="1796" width="70" height="8"/>
+                </g>
+                <g class="puerta-madera">
+                    <path d="M 360 500 L 360 580"/><path d="M 540 500 L 540 580"/><path d="M 340 750 L 340 830"/>
+                    <path d="M 510 750 L 510 830"/><path d="M 460 1400 L 460 1320"/>
+                </g>
+                <g class="puerta-giro">
+                    <path d="M 360 580 A 80 80 0 0 1 440 500"/><path d="M 540 580 A 80 80 0 0 0 460 500"/>
+                    <path d="M 340 830 A 80 80 0 0 1 260 750"/><path d="M 510 830 A 80 80 0 0 0 590 750"/>
+                    <path d="M 460 1320 A 80 80 0 0 1 540 1400"/>
+                </g>
+                <line x1="100" y1="1800" x2="450" y2="1800" stroke="#7f8c8d" stroke-width="4" stroke-dasharray="12,6"/>
+                <line x1="450" y1="1800" x2="550" y2="1800" stroke="#e67e22" stroke-width="3"/>
+              </g>
+
+              <g id="capa-textos-p1">
+                <text x="250" y="1060" class="txt-ambiente">SALA / COMEDOR</text><text x="250" y="1085" class="txt-subtexto">NPT +0.15</text>
+                <text x="600" y="1060" class="txt-ambiente">COCINA</text><text x="600" y="1085" class="txt-subtexto">Concepto Abierto</text>
+                <text x="275" y="1580" class="txt-ambiente">COCHERA</text><text x="275" y="1605" class="txt-subtexto">NPT ±0.00</text>
+                <text transform="translate(505, 1630) rotate(-90)" class="txt-ambiente" font-size="14">INGRESO / HALL P1</text>
+                <text x="630" y="1600" class="txt-ambiente" font-size="16">ÁREA ABIERTA C</text>
+              </g>
           </g>
 
-          <g id="capa-baño" class="capa-svg capa-oculta">
-            <path d="M 550 1500 L 710 1500" fill="none" stroke="#7f8c8d" stroke-width="8" stroke-dasharray="10,5"/>
-            <ellipse cx="600" cy="1440" rx="12" ry="16" fill="white" stroke="#2980b9" stroke-width="2"/>
-            <rect x="585" y="1410" width="30" height="15" fill="white" stroke="#2980b9" stroke-width="2"/>
-            <rect x="670" y="1410" width="30" height="20" rx="5" fill="white" stroke="#2980b9" stroke-width="2"/>
-            <circle cx="685" cy="1420" r="3" fill="#2980b9"/>
-            <text x="630" y="1480" class="txt-subtexto" fill="#2980b9" font-weight="bold">1/2 BAÑO</text>
+
+          <g id="grupo-piso2" class="capa-oculta">
+              <g id="capa-zonificacion-p2">
+                <rect x="100" y="100" width="350" height="400" class="zona-intima"/> <rect x="450" y="100" width="350" height="300" class="zona-intima"/> <rect x="500" y="400" width="300" height="100" class="zona-servicio"/> <rect x="100" y="500" width="250" height="250" class="zona-servicio"/> <rect x="350" y="500" width="150" height="250" class="zona-exterior"/> <rect x="400" y="750" width="400" height="300" class="zona-servicio"/> <rect x="100" y="750" width="300" height="650" class="zona-social"/> <rect x="400" y="1050" width="400" height="350" class="zona-social"/> <rect x="450" y="1400" width="100" height="100" class="zona-circulacion"/> 
+                
+                <rect x="100" y="1500" width="400" height="350" class="zona-social"/> <rect x="500" y="1500" width="150" height="150" class="zona-servicio"/> <rect x="500" y="1650" width="300" height="200" class="zona-intima"/> </g>
+
+              <g id="capa-muros-p2" class="muro-carga">
+                <polygon points="100,100 800,100 800,1850 100,1850"/>
+                <path d="M 100 500 L 800 500"/>
+                <path d="M 100 750 L 350 750 M 500 750 L 800 750"/>
+                <path d="M 450 100 L 450 500"/><path d="M 350 500 L 350 900"/><path d="M 500 500 L 500 750"/>
+                
+                <path d="M 100 1400 L 800 1400"/> <path d="M 100 1500 L 800 1500"/> <path d="M 450 1400 L 450 1500"/> <path d="M 500 1500 L 500 1850"/> <path d="M 500 1650 L 650 1650"/> </g>
+
+              <g id="capa-alero-linea">
+                <line x1="100" y1="1800" x2="800" y2="1800" class="muro-alero"/>
+              </g>
+
+              <g id="capa-vanos-p2">
+                <g class="vano-limpio">
+                    <rect x="150" y="1840" width="140" height="20"/> 
+                    <rect x="580" y="1840" width="140" height="20"/>
+                    <rect x="460" y="1390" width="80" height="20"/> <rect x="460" y="1490" width="80" height="20"/> <rect x="520" y="1490" width="70" height="20"/> </g>
+                <g class="ventana-linea">
+                  <rect x="150" y="1846" width="140" height="8"/>
+                  <rect x="580" y="1846" width="140" height="8"/>
+                </g>
+                <g class="puerta-madera">
+                    <path d="M 460 1400 L 460 1320"/> <path d="M 460 1500 L 460 1580"/> <path d="M 520 1500 L 520 1570"/> </g>
+                <g class="puerta-giro">
+                    <path d="M 460 1320 A 80 80 0 0 1 540 1400"/>
+                    <path d="M 460 1580 A 80 80 0 0 0 540 1500"/>
+                    <path d="M 520 1570 A 70 70 0 0 0 590 1500"/>
+                </g>
+              </g>
+
+              <g id="capa-textos-p2">
+                <text x="250" y="1120" class="txt-ambiente" font-size="16">SALA / COMEDOR</text>
+                <text x="250" y="1140" class="txt-subtexto">Dpto Posterior</text>
+                <text x="600" y="900" class="txt-ambiente" font-size="16">COCINA</text>
+                
+                <text x="500" y="1445" class="txt-subtexto" font-weight="bold" fill="#e67e22" font-size="11">HALL COMÚN</text>
+                
+                <text x="280" y="1650" class="txt-ambiente" font-size="15">SALA / COCINA</text>
+                <text x="280" y="1670" class="txt-subtexto">Dpto Frontal</text>
+                <text x="650" y="1740" class="txt-ambiente" font-size="15">DORMITORIO</text>
+                <text x="650" y="1760" class="txt-subtexto" font-size="12">Con Alero 0.50m</text>
+                <text x="560" y="1560" class="txt-subtexto" font-weight="bold" fill="#2980b9">B. COMPLETO</text>
+              </g>
           </g>
 
-          <g id="capa-acotado" class="capa-svg">
-            <g class="cota-proyeccion">
-              <path d="M 100 100 L 10 100 M 100 500 L 40 500 M 100 750 L 40 750 M 100 1400 L 40 1400 M 100 1800 L 10 1800"/>
-              <path d="M 100 100 L 100 10 M 450 100 L 450 40 M 550 1400 L 550 40 M 800 100 L 800 10"/>
-            </g>
-            <g class="cota-eje">
-              <polyline points="100,50 450,50 800,50" marker-start="url(#remate-cota)" marker-mid="url(#remate-cota)" marker-end="url(#remate-cota)"/>
-              <polyline points="100,20 800,20" marker-start="url(#remate-cota)" marker-end="url(#remate-cota)"/>
-              <polyline points="50,100 50,500 50,750 50,1400 50,1800" marker-start="url(#remate-cota)" marker-mid="url(#remate-cota)" marker-end="url(#remate-cota)"/>
-              <polyline points="20,100 20,1800" marker-start="url(#remate-cota)" marker-end="url(#remate-cota)"/>
-            </g>
-            <text x="275" y="42" class="txt-cota">3.50</text>
-            <text x="625" y="42" class="txt-cota">3.50</text>
-            <text x="450" y="14" class="txt-cota">7.00 m (FRONTIS)</text>
-            <text transform="translate(42, 300) rotate(-90)" class="txt-cota">4.00</text>
-            <text transform="translate(42, 625) rotate(-90)" class="txt-cota">2.50</text>
-            <text transform="translate(42, 1075) rotate(-90)" class="txt-cota">6.50</text>
-            <text transform="translate(42, 1600) rotate(-90)" class="txt-cota">4.00</text>
-            <text transform="translate(14, 950) rotate(-90)" class="txt-cota">17.00 m (LARGO)</text>
-          </g>
-
-          <g id="capa-muros" class="muro-carga capa-svg">
-            <polygon points="100,100 800,100 800,1800 100,1800"/>
-            <path d="M 100 500 L 800 500"/>
-            <path d="M 100 750 L 350 750 M 500 750 L 800 750"/>
-            <path d="M 100 1400 L 800 1400"/>
-            <path d="M 450 100 L 450 500"/>
-            <path d="M 350 500 L 350 900"/>
-            <path d="M 500 500 L 500 750"/>
-            <path d="M 450 1400 L 450 1800"/>
-          </g>
-
-          <g id="capa-vanos" class="vano-limpio capa-svg">
-            <rect x="180" y="490" width="100" height="20"/> 
-            <rect x="520" y="490" width="100" height="20"/> 
-            <rect x="340" y="550" width="20" height="100"/> 
-            <rect x="490" y="550" width="20" height="100"/> 
-            <rect x="410" y="740" width="80" height="20"/> 
-            <rect x="360" y="490" width="80" height="20"/>  
-            <rect x="460" y="490" width="80" height="20"/>  
-            <rect x="260" y="740" width="80" height="20"/>  
-            <rect x="510" y="740" width="80" height="20"/>  
-            <rect x="460" y="1390" width="80" height="20"/>  
-            <rect x="130" y="1390" width="180" height="20"/> 
-            <rect x="100" y="1790" width="350" height="20"/> 
-            <rect x="450" y="1790" width="100" height="20"/> 
-            <rect x="550" y="1790" width="70" height="20"/> 
-          </g>
-          
-          <g id="capa-ventanas" class="capa-svg">
-            <g class="ventana-linea">
-              <rect x="180" y="496" width="100" height="8"/>
-              <rect x="520" y="496" width="100" height="8"/>
-              <rect x="346" y="550" width="8" height="100"/>
-              <rect x="496" y="550" width="8" height="100"/>
-              <rect x="410" y="746" width="80" height="8"/> 
-              <rect x="130" y="1396" width="180" height="8"/>
-              <rect x="550" y="1796" width="70" height="8"/>
-            </g>
-            <g class="ventana-vidrio">
-              <line x1="180" y1="500" x2="280" y2="500"/>
-              <line x1="520" y1="500" x2="620" y2="500"/>
-              <line x1="350" y1="550" x2="350" y2="650"/>
-              <line x1="500" y1="550" x2="500" y2="650"/>
-              <line x1="410" y1="750" x2="490" y2="750"/> 
-              <line x1="130" y1="1400" x2="310" y2="1400"/>
-              <line x1="550" y1="1800" x2="620" y2="1800"/>
-            </g>
-          </g>
-
-          <g id="capa-puertas" class="capa-svg">
-            <path d="M 360 500 L 360 580" class="puerta-madera"/>
-            <path d="M 360 580 A 80 80 0 0 1 440 500" class="puerta-giro"/>
-            <path d="M 540 500 L 540 580" class="puerta-madera"/>
-            <path d="M 540 580 A 80 80 0 0 0 460 500" class="puerta-giro"/>
-            <path d="M 340 750 L 340 830" class="puerta-madera"/>
-            <path d="M 340 830 A 80 80 0 0 1 260 750" class="puerta-giro"/>
-            <path d="M 510 750 L 510 830" class="puerta-madera"/>
-            <path d="M 510 830 A 80 80 0 0 0 590 750" class="puerta-giro"/>
-            <path d="M 460 1400 L 460 1320" class="puerta-madera"/>
-            <path d="M 460 1320 A 80 80 0 0 1 540 1400" class="puerta-giro"/>
-            <line x1="100" y1="1800" x2="450" y2="1800" stroke="#7f8c8d" stroke-width="4" stroke-dasharray="12,6"/>
-            <line x1="450" y1="1800" x2="550" y2="1800" stroke="#e67e22" stroke-width="3"/>
+          <g id="capa-compartida-estructuras">
+              <g class="vano-limpio">
+                <rect x="180" y="490" width="100" height="20"/> <rect x="520" y="490" width="100" height="20"/> 
+                <rect x="340" y="550" width="20" height="100"/> <rect x="490" y="550" width="20" height="100"/>
+              </g>
+              <g class="ventana-linea">
+                <rect x="180" y="496" width="100" height="8"/><rect x="520" y="496" width="100" height="8"/>
+                <rect x="346" y="550" width="8" height="100"/><rect x="496" y="550" width="8" height="100"/>
+              </g>
+              <g class="ventana-vidrio">
+                <line x1="180" y1="500" x2="280" y2="500"/><line x1="520" y1="500" x2="620" y2="500"/>
+                <line x1="350" y1="550" x2="350" y2="650"/><line x1="500" y1="550" x2="500" y2="650"/>
+              </g>
+              <g class="puerta-madera">
+                <path d="M 360 500 L 360 580"/><path d="M 540 500 L 540 580"/>
+              </g>
+              <g class="puerta-giro">
+                <path d="M 360 580 A 80 80 0 0 1 440 500"/><path d="M 540 580 A 80 80 0 0 0 460 500"/>
+              </g>
+              <g id="capa-textos-compartidos">
+                <text x="275" y="300" class="txt-ambiente">DORMITORIO 1</text><text x="275" y="325" class="txt-subtexto">Área: 14.00 m²</text>
+                <text x="625" y="300" class="txt-ambiente">DORMITORIO 2</text><text x="625" y="325" class="txt-subtexto">Área: 14.00 m²</text>
+                <text x="225" y="620" class="txt-ambiente">BAÑO 1</text><text x="225" y="640" class="txt-subtexto">Completo</text>
+                <text x="425" y="610" class="txt-ambiente" font-size="15">TRAGALUZ</text>
+                <text x="650" y="620" class="txt-ambiente">BAÑO 2</text>
+              </g>
           </g>
 
           <g id="capa-escalera" class="capa-svg">
@@ -372,26 +388,15 @@
             <text x="615" y="1745" fill="#e74c3c" font-family="Arial" font-size="11" font-weight="bold" text-anchor="middle">SUBE</text>
           </g>
 
-          <g id="capa-textos" class="capa-svg">
-            <text x="275" y="300" class="txt-ambiente">DORMITORIO 1</text>
-            <text x="275" y="325" class="txt-subtexto">Área: 14.00 m²</text>
-            <text x="625" y="300" class="txt-ambiente">DORMITORIO 2</text>
-            <text x="625" y="325" class="txt-subtexto">Área: 14.00 m²</text>
-            <text x="225" y="620" class="txt-ambiente">BAÑO 1</text>
-            <text x="225" y="640" class="txt-subtexto">Completo</text>
-            <text x="425" y="610" class="txt-ambiente" font-size="15">TRAGALUZ</text>
-            <text x="425" y="630" class="txt-subtexto" font-size="12">Patio Pint.</text>
-            <text x="650" y="620" class="txt-ambiente">BAÑO 2</text>
-            <text x="650" y="640" class="txt-subtexto">En Suite</text>
-            <text x="250" y="1060" class="txt-ambiente">SALA / COMEDOR</text> 
-            <text x="250" y="1085" class="txt-subtexto">NPT +0.15</text>
-            <text x="600" y="1060" class="txt-ambiente">COCINA</text> 
-            <text x="600" y="1085" class="txt-subtexto">Concepto Abierto</text>
-            <text x="275" y="1580" class="txt-ambiente">COCHERA</text>
-            <text x="275" y="1605" class="txt-subtexto">NPT ±0.00</text>
-            <text transform="translate(505, 1630) rotate(-90)" class="txt-ambiente" font-size="14">INGRESO / HALL</text>
-            <text x="630" y="1600" class="txt-ambiente" font-size="16">ÁREA ABIERTA C</text>
-            <text x="630" y="1620" class="txt-subtexto" font-size="13">Espacio integrado</text>
+          <g id="capa-acotado" class="capa-svg">
+            <g class="cota-eje">
+              <polyline points="100,50 450,50 800,50" marker-start="url(#remate-cota)" marker-mid="url(#remate-cota)" marker-end="url(#remate-cota)"/>
+              <polyline points="50,100 50,500 50,750 50,1400 50,1800" marker-start="url(#remate-cota)" marker-mid="url(#remate-cota)" marker-end="url(#remate-cota)"/>
+            </g>
+            <text x="275" y="42" class="txt-cota">3.50</text><text x="625" y="42" class="txt-cota">3.50</text>
+            <text x="450" y="14" class="txt-cota">7.00 m (FRONTIS)</text>
+            <text transform="translate(14, 950) rotate(-90)" class="txt-cota">17.00 m (LARGO TERRENO)</text>
+            <text x="450" y="1825" id="txt-cota-alero" class="txt-cota" fill="#e67e22" display="none">+0.50m ALERO PROYECTADO</text>
           </g>
 
           <g id="capa-vertices" class="capa-svg">
@@ -418,37 +423,33 @@
           </g>
 
           <g transform="translate(850, 100)" id="capa-leyenda" class="capa-svg">
-            <rect width="270" height="390" fill="#ffffff" stroke="#2c3e50" stroke-width="2" rx="8"/>
+            <rect width="270" height="420" fill="#ffffff" stroke="#2c3e50" stroke-width="2" rx="8"/>
             <text x="135" y="40" class="txt-ambiente" font-size="18">ESPECIFICACIONES</text>
-            <rect x="25" y="75" width="30" height="20" class="zona-social" stroke="#7f8c8d"/>
-            <text x="70" y="90" class="txt-leyenda">Zona Social</text>
-            <rect x="25" y="115" width="30" height="20" class="zona-intima" stroke="#7f8c8d"/>
-            <text x="70" y="130" class="txt-leyenda">Zona Íntima</text>
-            <rect x="25" y="155" width="30" height="20" class="zona-servicio" stroke="#7f8c8d"/>
-            <text x="70" y="170" class="txt-leyenda">Zona de Servicio</text>
-            <rect x="25" y="195" width="30" height="20" class="zona-exterior" stroke="#7f8c8d"/>
-            <text x="70" y="210" class="txt-leyenda">Zonas Abiertas / Tragaluz</text>
-            <rect x="25" y="235" width="30" height="20" class="zona-circulacion" stroke="#7f8c8d"/>
-            <text x="70" y="250" class="txt-leyenda">Circulaciones</text>
-            <circle cx="40" cy="285" r="6" class="punto-vertice"/>
-            <text x="70" y="290" class="txt-leyenda">Vértices de Zonas (A-T)</text>
+            <rect x="25" y="75" width="30" height="20" class="zona-social" stroke="#7f8c8d"/><text x="70" y="90" class="txt-leyenda">Zona Social</text>
+            <rect x="25" y="115" width="30" height="20" class="zona-intima" stroke="#7f8c8d"/><text x="70" y="130" class="txt-leyenda">Zona Íntima</text>
+            <rect x="25" y="155" width="30" height="20" class="zona-servicio" stroke="#7f8c8d"/><text x="70" y="170" class="txt-leyenda">Zona de Servicio</text>
+            <rect x="25" y="195" width="30" height="20" class="zona-exterior" stroke="#7f8c8d"/><text x="70" y="210" class="txt-leyenda">Zonas Abiertas / Ductos</text>
+            <rect x="25" y="235" width="30" height="20" class="zona-circulacion" stroke="#7f8c8d"/><text x="70" y="250" class="txt-leyenda">Circulaciones comunes</text>
+            <circle cx="40" cy="285" r="6" class="punto-vertice"/><text x="70" y="290" class="txt-leyenda">Vértices (A-T)</text>
             <line x1="20" y1="315" x2="250" y2="315" stroke="#bdc3c7" stroke-width="1"/>
-            <text x="25" y="340" class="txt-leyenda" font-size="13">Escala Gráfica: 1:50</text>
-            <text x="25" y="360" class="txt-leyenda" font-size="13">Acotado: Metros (m)</text>
-            <text x="25" y="380" class="txt-leyenda" font-size="13">Área Total: 119.00 m²</text>
+            <text x="25" y="345" class="txt-leyenda" font-size="13">Escala Gráfica: 1:50</text>
+            <text x="25" y="365" class="txt-leyenda" font-size="13">Acotado: Metros (m)</text>
+            <text x="25" y="385" class="txt-leyenda" font-size="13" id="leyenda-area">Área Total P1: 119.00 m²</text>
+            <text x="25" y="405" class="txt-leyenda" font-size="13" id="leyenda-tipo">Tipo: Unifamiliar</text>
           </g>
 
           <g id="capa-servicios" class="capa-svg">
-            <rect x="720" y="1810" width="35" height="20" fill="#f1c40f" stroke="#e67e22" stroke-width="2"/>
-            <text x="737.5" y="1824" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">GAS</text>
-            <rect x="760" y="1810" width="35" height="20" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
-            <text x="777.5" y="1824" font-size="10" font-weight="bold" fill="white" text-anchor="middle">LUZ</text>
+            <rect x="720" y="1860" width="35" height="20" fill="#f1c40f" stroke="#e67e22" stroke-width="2"/>
+            <text x="737.5" y="1874" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">GAS</text>
+            <rect x="760" y="1860" width="35" height="20" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="777.5" y="1874" font-size="10" font-weight="bold" fill="white" text-anchor="middle">LUZ</text>
           </g>
 
         </svg>
     </div>
 
     <script>
+        // Función general para capas
         function alternarCapa(idCapa, botonElemento) {
             const capa = document.getElementById(idCapa);
             if (capa.classList.contains('capa-oculta')) {
@@ -457,6 +458,43 @@
             } else {
                 capa.classList.add('capa-oculta');
                 botonElemento.classList.remove('activa');
+            }
+        }
+
+        // LÓGICA DE SELECCIÓN DE PISO
+        function seleccionarPiso(pisoNum) {
+            const p1Group = document.getElementById('grupo-piso1');
+            const p2Group = document.getElementById('grupo-piso2');
+            const btnP1 = document.getElementById('btn-p1');
+            const btnP2 = document.getElementById('btn-p2');
+            const txtAlero = document.getElementById('txt-cota-alero');
+            const leyArea = document.getElementById('leyenda-area');
+            const leyTipo = document.getElementById('leyenda-tipo');
+            const btnBañoControl = document.getElementById('btn-capa-baño-control');
+
+            if (pisoNum === 1) {
+                p1Group.classList.remove('capa-oculta');
+                p2Group.classList.add('capa-oculta');
+                btnP1.classList.add('activa');
+                btnP2.classList.remove('activa');
+                txtAlero.style.display = 'none';
+                leyArea.textContent = 'Área Total P1: 119.00 m²';
+                leyTipo.textContent = 'Tipo: Unifamiliar';
+                
+                // Habilitar control de baño P1
+                btnBañoControl.style.display = 'flex';
+                btnBañoControl.textContent = '🚽 Baño P1 (Bajo Escalera)';
+            } else {
+                p1Group.classList.add('capa-oculta');
+                p2Group.classList.remove('capa-oculta');
+                btnP1.classList.remove('activa');
+                btnP2.classList.add('activa');
+                txtAlero.style.display = 'block';
+                leyArea.textContent = 'Área Total P2: 122.50 m²';
+                leyTipo.textContent = 'Tipo: 2 Dptos Indep.';
+                
+                // Ocultar botón del baño P1 ya que el P2 tiene distribución propia fija
+                btnBañoControl.style.display = 'none';
             }
         }
 
@@ -475,4 +513,4 @@
     </script>
 
 </body>
-</html>
+</html
