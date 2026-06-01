@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Plano Técnico Interactivo - 7x17m</title>
     <style>
         :root {
@@ -10,17 +10,22 @@
             --panel-color: #2c3e50;
             --accent-color: #e67e22;
         }
+        * { box-sizing: border-box; }
+        
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             display: flex;
+            flex-direction: row;
             background-color: var(--bg-color);
             height: 100vh;
             overflow: hidden;
         }
-        /* Panel Lateral */
+        
+        /* Panel Lateral (Escritorio) */
         #controles {
             width: 320px;
+            flex-shrink: 0;
             background-color: var(--panel-color);
             color: white;
             padding: 20px;
@@ -34,11 +39,23 @@
             font-size: 1.2rem; 
             margin-top: 0;
         }
+        #controles h3 {
+            font-size: 14px; 
+            margin-top: 20px; 
+            color: #bdc3c7;
+            border-bottom: 1px solid #34495e;
+            padding-bottom: 5px;
+        }
+        
+        .botones-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .btn-capa {
-            display: block;
             width: 100%;
             padding: 12px;
-            margin-bottom: 8px;
             background: #34495e;
             border: 1px solid #2c3e50;
             color: white;
@@ -47,6 +64,8 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 14px;
+            display: flex;
+            align-items: center;
         }
         .btn-capa:hover { background: #415b76; }
         .btn-capa.activa { 
@@ -62,12 +81,14 @@
             align-items: center;
             padding: 20px;
             overflow: auto;
+            width: calc(100% - 320px);
         }
         svg {
             background-color: white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             max-height: 95vh;
             width: auto;
+            max-width: 100%;
         }
         
         /* Sistema de Capas SVG */
@@ -97,6 +118,43 @@
         .txt-leyenda { fill: #2c3e50; font-family: 'Arial', sans-serif; font-size: 15px; font-weight: bold; }
         .punto-vertice { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
         .texto-vertice { fill: #c0392b; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; }
+
+        /* ================= MEDIA QUERIES PARA CELULARES Y TABLETS ================= */
+        @media (max-width: 850px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                overflow: auto; /* Permite hacer scroll vertical en celulares */
+            }
+            
+            #lienzo {
+                width: 100%;
+                min-height: 65vh; /* Le da prioridad al plano en la pantalla */
+                padding: 10px;
+                order: 1; /* Pone el plano arriba */
+            }
+            
+            svg {
+                height: 100%;
+                max-height: 80vh;
+            }
+
+            #controles {
+                width: 100%;
+                order: 2; /* Pone los controles abajo */
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+                border-top: 4px solid var(--accent-color);
+                padding: 15px;
+            }
+
+            /* Transforma los botones en una cuadrícula en móviles */
+            .botones-grupo {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -104,21 +162,26 @@
     <div id="controles">
         <h2>CONTROL DE CAPAS</h2>
         
-        <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación (Colores)</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-muros', this)">🧱 Muros y Estructura</button>
+        <div class="botones-grupo">
+            <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación (Colores)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-muros', this)">🧱 Muros y Estructura</button>
+        </div>
         
-        <h3 style="font-size: 14px; margin-top: 20px; color: #bdc3c7;">Distribución Específica</h3>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-escalera', this)">🪜 Escalera en "U"</button>
-        <button class="btn-capa" onclick="alternarCapa('capa-baño', this)">🚽 Baño (Bajo escalera)</button>
+        <h3>Distribución Específica</h3>
+        <div class="botones-grupo">
+            <button class="btn-capa activa" onclick="alternarCapa('capa-escalera', this)">🪜 Escalera en "U"</button>
+            <button class="btn-capa" onclick="alternarCapa('capa-baño', this)">🚽 Baño (Bajo escalera)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-acotado', this)">📏 Cotas (Medidas)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices (A-T)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Textos de Ambientes</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Cuadro de Leyenda</button>
+        </div>
         
-        <button class="btn-capa activa" onclick="alternarCapa('capa-acotado', this)">📏 Cotas (Medidas)</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices (A-T)</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Textos de Ambientes</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Cuadro de Leyenda</button>
-        
-        <h3 style="font-size: 14px; margin-top: 20px; color: #bdc3c7;">Exteriores</h3>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-entorno', this)">🌳 Calle y Vereda</button>
-        <button class="btn-capa activa" onclick="alternarCapa('capa-servicios', this)">⚡ Medidores en T (Luz/Gas)</button>
+        <h3>Exteriores</h3>
+        <div class="botones-grupo">
+            <button class="btn-capa activa" onclick="alternarCapa('capa-entorno', this)">🌳 Calle y Vereda</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-servicios', this)">⚡ Medidores en T</button>
+        </div>
     </div>
 
     <div id="lienzo">
@@ -344,7 +407,6 @@
           <g id="capa-servicios" class="capa-svg">
             <rect x="720" y="1810" width="35" height="20" fill="#f1c40f" stroke="#e67e22" stroke-width="2"/>
             <text x="737.5" y="1824" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">GAS</text>
-            
             <rect x="760" y="1810" width="35" height="20" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
             <text x="777.5" y="1824" font-size="10" font-weight="bold" fill="white" text-anchor="middle">LUZ</text>
           </g>
