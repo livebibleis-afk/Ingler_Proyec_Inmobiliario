@@ -21,7 +21,7 @@
             flex-direction: row;
             background-color: var(--bg-color);
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* En PC evitamos el scroll general */
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
@@ -32,29 +32,13 @@
             --panel-color: #1e1e1e;
             --text-color: #ffffff;
         }
-        body.dark-mode svg {
-            background-color: #1a1a1a !important;
-        }
-        body.dark-mode .txt-cota, body.dark-mode .txt-ambiente, body.dark-mode .txt-leyenda {
-            fill: #ffffff !important;
-        }
-        body.dark-mode .txt-subtexto {
-            fill: #cccccc !important;
-        }
-        body.dark-mode #cuadricula rect {
-            stroke: #2a2a2a !important;
-        }
-        body.dark-mode .vano-limpio {
-            fill: #1a1a1a !important;
-        }
-        body.dark-mode #capa-leyenda rect {
-            fill: #242424 !important;
-            stroke: #ffffff !important;
-        }
-        body.dark-mode #capa-entorno rect[fill="#e0e0e0"] {
-            fill: #2d2d2d !important;
-            stroke: #444444 !important;
-        }
+        body.dark-mode svg { background-color: #1a1a1a !important; }
+        body.dark-mode .txt-cota, body.dark-mode .txt-ambiente, body.dark-mode .txt-leyenda { fill: #ffffff !important; }
+        body.dark-mode .txt-subtexto { fill: #cccccc !important; }
+        body.dark-mode #cuadricula rect { stroke: #2a2a2a !important; }
+        body.dark-mode .vano-limpio { fill: #1a1a1a !important; }
+        body.dark-mode #capa-leyenda rect { fill: #242424 !important; stroke: #ffffff !important; }
+        body.dark-mode #capa-entorno rect[fill="#e0e0e0"] { fill: #2d2d2d !important; stroke: #444444 !important; }
         
         /* Panel Lateral */
         #controles {
@@ -64,29 +48,16 @@
             color: var(--panel-text);
             padding: 20px;
             box-shadow: 3px 0 15px rgba(0,0,0,0.2);
-            z-index: 10;
+            z-index: 9999; /* FORZAMOS QUE ESTÉ POR ENCIMA DEL SVG */
+            position: relative;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* Desplazamiento suave en iOS */
             transition: background-color 0.3s ease;
         }
-        #controles h2 { 
-            border-bottom: 2px solid var(--accent-color); 
-            padding-bottom: 10px; 
-            font-size: 1.2rem; 
-            margin-top: 0;
-        }
-        #controles h3 {
-            font-size: 14px; 
-            margin-top: 20px; 
-            color: #bdc3c7;
-            border-bottom: 1px solid #34495e;
-            padding-bottom: 5px;
-        }
+        #controles h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; font-size: 1.2rem; margin-top: 0; }
+        #controles h3 { font-size: 14px; margin-top: 20px; color: #bdc3c7; border-bottom: 1px solid #34495e; padding-bottom: 5px; }
         
-        .botones-grupo {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .botones-grupo { display: flex; flex-direction: column; gap: 8px; }
 
         .btn-capa {
             width: 100%;
@@ -101,19 +72,17 @@
             font-size: 14px;
             display: flex;
             align-items: center;
+            touch-action: manipulation; /* Evita el retraso de 300ms al tocar en iPhone */
         }
         .btn-capa:hover { background: #415b76; }
-        .btn-capa.activa { 
-            border-left: 5px solid var(--accent-color); 
-            background: #1a252f; 
-        }
+        .btn-capa.activa { border-left: 5px solid var(--accent-color); background: #1a252f; }
 
         .btn-utilidad { background: #27ae60; border: 1px solid #1e8449; font-weight: bold; justify-content: center; }
         .btn-utilidad:hover { background: #2ecc71; }
         .btn-dark-toggle { background: #7f8c8d; border: 1px solid #626567; font-weight: bold; justify-content: center; }
         .btn-dark-toggle:hover { background: #95a5a6; }
 
-        /* Contenedor del SVG (PARCHE PARA SAFARI) */
+        /* Contenedor del SVG */
         #lienzo {
             flex-grow: 1;
             display: flex;
@@ -121,14 +90,16 @@
             align-items: center;
             padding: 20px;
             width: calc(100% - 320px);
-            height: 100vh; /* Altura estricta para Safari Desktop */
+            position: relative;
+            z-index: 1;
+            overflow: auto;
         }
         svg {
             background-color: white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            width: 100%; /* Safari necesita anchos fijos, no auto */
-            height: 100%; /* Safari necesita altos fijos */
-            max-height: 95%;
+            max-height: 95vh;
+            width: auto;
+            max-width: 100%;
             transition: background-color 0.3s ease;
         }
         
@@ -160,24 +131,28 @@
         .punto-vertice { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
         .texto-vertice { fill: #c0392b; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; }
 
-        /* ================= PARCHE PARA SAFARI EN iPHONE ================= */
+        /* ================= PARCHE DEFINITIVO PARA iPHONE/SAFARI ================= */
         @media (max-width: 850px) {
             body {
                 flex-direction: column;
                 height: auto;
                 min-height: 100vh;
-                overflow-x: hidden;
+                /* ESTO LIBERA EL SCROLL EN IOS */
+                overflow: auto !important; 
+                -webkit-overflow-scrolling: touch; 
             }
             #lienzo {
                 width: 100%;
-                height: 65vh; /* Safari colapsa con min-height, necesita height exacto */
+                height: auto;
+                min-height: 50vh;
                 padding: 10px;
                 order: 1;
+                display: block; /* Anula conflictos de flexbox en Safari */
             }
             svg {
                 width: 100%;
-                height: 100%;
-                max-height: none;
+                height: auto; /* Permite que iOS escale naturalmente sin desbordar */
+                max-height: 70vh;
             }
             #controles {
                 width: 100%;
@@ -185,6 +160,7 @@
                 box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
                 border-top: 4px solid var(--accent-color);
                 padding: 15px;
+                display: block;
             }
             .botones-grupo {
                 display: grid;
@@ -193,12 +169,12 @@
             }
         }
 
-        /* ================= REGLAS ESTRICTAS DE IMPRESIÓN ================= */
+        /* ================= REGLAS DE IMPRESIÓN ================= */
         @media print {
             #controles { display: none !important; }
-            body { background: white !important; color: black !important; display: block !important; height: auto !important; }
-            #lienzo { width: 100% !important; padding: 0 !important; display: block !important; height: 100% !important; }
-            svg { box-shadow: none !important; max-height: 100% !important; width: 100% !important; background-color: white !important; }
+            body { background: white !important; color: black !important; display: block !important; height: auto !important; overflow: visible !important; }
+            #lienzo { width: 100% !important; padding: 0 !important; display: block !important; height: auto !important; }
+            svg { box-shadow: none !important; max-height: none !important; width: 100% !important; background-color: white !important; }
             #cuadricula rect { stroke: #e5e8e8 !important; }
             .txt-cota, .txt-ambiente, .txt-leyenda { fill: #2c3e50 !important; }
             .txt-subtexto { fill: #626567 !important; }
@@ -221,7 +197,7 @@
 
         <h3>Capas del Sistema</h3>
         <div class="botones-grupo">
-            <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación (Colores)</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-zonificacion', this)">🎨 Zonificación</button>
             <button class="btn-capa activa" onclick="alternarCapa('capa-muros', this)">🧱 Muros y Estructura</button>
         </div>
         
@@ -231,8 +207,8 @@
             <button class="btn-capa" onclick="alternarCapa('capa-baño', this)">🚽 Baño (Bajo escalera)</button>
             <button class="btn-capa activa" onclick="alternarCapa('capa-acotado', this)">📏 Cotas (Medidas)</button>
             <button class="btn-capa activa" onclick="alternarCapa('capa-vertices', this)">🔴 Vértices (A-T)</button>
-            <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Textos de Ambientes</button>
-            <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Cuadro de Leyenda</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-textos', this)">📝 Ambientes</button>
+            <button class="btn-capa activa" onclick="alternarCapa('capa-leyenda', this)">📋 Leyenda</button>
         </div>
         
         <h3>Exteriores</h3>
@@ -313,7 +289,185 @@
           <g id="capa-muros" class="muro-carga capa-svg">
             <polygon points="100,100 800,100 800,1800 100,1800"/>
             <path d="M 100 500 L 800 500"/>
-            <path
+            <path d="M 100 750 L 350 750 M 500 750 L 800 750"/>
+            <path d="M 100 1400 L 800 1400"/>
+            <path d="M 450 100 L 450 500"/>
+            <path d="M 350 500 L 350 900"/>
+            <path d="M 500 500 L 500 750"/>
+            <path d="M 450 1400 L 450 1800"/>
+          </g>
+
+          <g id="capa-vanos" class="vano-limpio capa-svg">
+            <rect x="180" y="490" width="100" height="20"/> 
+            <rect x="520" y="490" width="100" height="20"/> 
+            <rect x="340" y="550" width="20" height="100"/> 
+            <rect x="490" y="550" width="20" height="100"/> 
+            <rect x="410" y="740" width="80" height="20"/> 
+            <rect x="360" y="490" width="80" height="20"/>  
+            <rect x="460" y="490" width="80" height="20"/>  
+            <rect x="260" y="740" width="80" height="20"/>  
+            <rect x="510" y="740" width="80" height="20"/>  
+            <rect x="460" y="1390" width="80" height="20"/>  
+            <rect x="130" y="1390" width="180" height="20"/> 
+            <rect x="100" y="1790" width="350" height="20"/> 
+            <rect x="450" y="1790" width="100" height="20"/> 
+            <rect x="550" y="1790" width="70" height="20"/> 
+          </g>
+          
+          <g id="capa-ventanas" class="capa-svg">
+            <g class="ventana-linea">
+              <rect x="180" y="496" width="100" height="8"/>
+              <rect x="520" y="496" width="100" height="8"/>
+              <rect x="346" y="550" width="8" height="100"/>
+              <rect x="496" y="550" width="8" height="100"/>
+              <rect x="410" y="746" width="80" height="8"/> 
+              <rect x="130" y="1396" width="180" height="8"/>
+              <rect x="550" y="1796" width="70" height="8"/>
+            </g>
+            <g class="ventana-vidrio">
+              <line x1="180" y1="500" x2="280" y2="500"/>
+              <line x1="520" y1="500" x2="620" y2="500"/>
+              <line x1="350" y1="550" x2="350" y2="650"/>
+              <line x1="500" y1="550" x2="500" y2="650"/>
+              <line x1="410" y1="750" x2="490" y2="750"/> 
+              <line x1="130" y1="1400" x2="310" y2="1400"/>
+              <line x1="550" y1="1800" x2="620" y2="1800"/>
+            </g>
+          </g>
+
+          <g id="capa-puertas" class="capa-svg">
+            <path d="M 360 500 L 360 580" class="puerta-madera"/>
+            <path d="M 360 580 A 80 80 0 0 1 440 500" class="puerta-giro"/>
+            <path d="M 540 500 L 540 580" class="puerta-madera"/>
+            <path d="M 540 580 A 80 80 0 0 0 460 500" class="puerta-giro"/>
+            <path d="M 340 750 L 340 830" class="puerta-madera"/>
+            <path d="M 340 830 A 80 80 0 0 1 260 750" class="puerta-giro"/>
+            <path d="M 510 750 L 510 830" class="puerta-madera"/>
+            <path d="M 510 830 A 80 80 0 0 0 590 750" class="puerta-giro"/>
+            <path d="M 460 1400 L 460 1320" class="puerta-madera"/>
+            <path d="M 460 1320 A 80 80 0 0 1 540 1400" class="puerta-giro"/>
+            <line x1="100" y1="1800" x2="450" y2="1800" stroke="#7f8c8d" stroke-width="4" stroke-dasharray="12,6"/>
+            <line x1="450" y1="1800" x2="550" y2="1800" stroke="#e67e22" stroke-width="3"/>
+          </g>
+
+          <g id="capa-escalera" class="capa-svg">
+            <path d="M 620 1800 L 800 1800 L 800 1400 L 550 1400 L 550 1490 L 710 1490 L 710 1710 L 620 1710 Z" fill="#fcf3cf" stroke="#34495e" stroke-width="1.5"/>
+            <line x1="650" y1="1710" x2="650" y2="1800" class="escalera-escalon"/>
+            <line x1="680" y1="1710" x2="680" y2="1800" class="escalera-escalon"/>
+            <line x1="710" y1="1710" x2="710" y2="1800" class="escalera-escalon"/>
+            <line x1="710" y1="1682.5" x2="800" y2="1682.5" class="escalera-escalon"/>
+            <line x1="710" y1="1655" x2="800" y2="1655" class="escalera-escalon"/>
+            <line x1="710" y1="1627.5" x2="800" y2="1627.5" class="escalera-escalon"/>
+            <line x1="710" y1="1600" x2="800" y2="1600" class="escalera-escalon"/>
+            <line x1="710" y1="1572.5" x2="800" y2="1572.5" class="escalera-escalon"/>
+            <line x1="710" y1="1545" x2="800" y2="1545" class="escalera-escalon"/>
+            <line x1="710" y1="1517.5" x2="800" y2="1517.5" class="escalera-escalon"/>
+            <line x1="710" y1="1490" x2="800" y2="1490" class="escalera-escalon"/>
+            <line x1="678" y1="1400" x2="678" y2="1490" class="escalera-escalon"/>
+            <line x1="646" y1="1400" x2="646" y2="1490" class="escalera-escalon"/>
+            <line x1="614" y1="1400" x2="614" y2="1490" class="escalera-escalon"/>
+            <line x1="582" y1="1400" x2="582" y2="1490" class="escalera-escalon"/>
+            <line x1="550" y1="1400" x2="550" y2="1490" class="escalera-escalon"/>
+            <path d="M 605 1755 L 755 1755 L 755 1445 L 570 1445 M 580 1435 L 570 1445 L 580 1455" class="escalera-flecha"/>
+            <text x="615" y="1745" fill="#e74c3c" font-family="Arial" font-size="11" font-weight="bold" text-anchor="middle">SUBE</text>
+          </g>
+
+          <g id="capa-textos" class="capa-svg">
+            <text x="275" y="300" class="txt-ambiente">DORMITORIO 1</text>
+            <text x="275" y="325" class="txt-subtexto">Área: 14.00 m²</text>
+            <text x="625" y="300" class="txt-ambiente">DORMITORIO 2</text>
+            <text x="625" y="325" class="txt-subtexto">Área: 14.00 m²</text>
+            <text x="225" y="620" class="txt-ambiente">BAÑO 1</text>
+            <text x="225" y="640" class="txt-subtexto">Completo</text>
+            <text x="425" y="610" class="txt-ambiente" font-size="15">TRAGALUZ</text>
+            <text x="425" y="630" class="txt-subtexto" font-size="12">Patio Pint.</text>
+            <text x="650" y="620" class="txt-ambiente">BAÑO 2</text>
+            <text x="650" y="640" class="txt-subtexto">En Suite</text>
+            <text x="250" y="1060" class="txt-ambiente">SALA / COMEDOR</text> 
+            <text x="250" y="1085" class="txt-subtexto">NPT +0.15</text>
+            <text x="600" y="1060" class="txt-ambiente">COCINA</text> 
+            <text x="600" y="1085" class="txt-subtexto">Concepto Abierto</text>
+            <text x="275" y="1580" class="txt-ambiente">COCHERA</text>
+            <text x="275" y="1605" class="txt-subtexto">NPT ±0.00</text>
+            <text transform="translate(505, 1630) rotate(-90)" class="txt-ambiente" font-size="14">INGRESO / HALL</text>
+            <text x="630" y="1600" class="txt-ambiente" font-size="16">ÁREA ABIERTA C</text>
+            <text x="630" y="1620" class="txt-subtexto" font-size="13">Espacio integrado</text>
+          </g>
+
+          <g id="capa-vertices" class="capa-svg">
+            <circle cx="100" cy="100" r="6" class="punto-vertice"/><text x="80" y="90" class="texto-vertice">A</text>
+            <circle cx="450" cy="100" r="6" class="punto-vertice"/><text x="455" y="90" class="texto-vertice">B</text>
+            <circle cx="800" cy="100" r="6" class="punto-vertice"/><text x="810" y="90" class="texto-vertice">C</text>
+            <circle cx="100" cy="500" r="6" class="punto-vertice"/><text x="75" y="490" class="texto-vertice">D</text>
+            <circle cx="350" cy="500" r="6" class="punto-vertice"/><text x="330" y="490" class="texto-vertice">E</text>
+            <circle cx="450" cy="500" r="6" class="punto-vertice"/><text x="455" y="485" class="texto-vertice">F</text>
+            <circle cx="500" cy="500" r="6" class="punto-vertice"/><text x="510" y="490" class="texto-vertice">G</text>
+            <circle cx="800" cy="500" r="6" class="punto-vertice"/><text x="815" y="490" class="texto-vertice">H</text>
+            <circle cx="100" cy="750" r="6" class="punto-vertice"/><text x="75" y="740" class="texto-vertice">I</text>
+            <circle cx="350" cy="750" r="6" class="punto-vertice"/><text x="330" y="740" class="texto-vertice">J</text>
+            <circle cx="500" cy="750" r="6" class="punto-vertice"/><text x="510" y="740" class="texto-vertice">K</text>
+            <circle cx="800" cy="750" r="6" class="punto-vertice"/><text x="815" y="740" class="texto-vertice">L</text>
+            <circle cx="100" cy="1400" r="6" class="punto-vertice"/><text x="75" y="1390" class="texto-vertice">M</text>
+            <circle cx="450" cy="1400" r="6" class="punto-vertice"/><text x="430" y="1390" class="texto-vertice">N</text>
+            <circle cx="550" cy="1400" r="6" class="punto-vertice"/><text x="560" y="1390" class="texto-vertice">O</text>
+            <circle cx="800" cy="1400" r="6" class="punto-vertice"/><text x="815" y="1390" class="texto-vertice">P</text>
+            <circle cx="100" cy="1800" r="6" class="punto-vertice"/><text x="75" y="1820" class="texto-vertice">Q</text>
+            <circle cx="450" cy="1800" r="6" class="punto-vertice"/><text x="430" y="1820" class="texto-vertice">R</text>
+            <circle cx="550" cy="1800" r="6" class="punto-vertice"/><text x="560" y="1820" class="texto-vertice">S</text>
+            <circle cx="800" cy="1800" r="6" class="punto-vertice"/><text x="815" y="1820" class="texto-vertice">T</text>
+          </g>
+
+          <g transform="translate(850, 100)" id="capa-leyenda" class="capa-svg">
+            <rect width="270" height="390" fill="#ffffff" stroke="#2c3e50" stroke-width="2" rx="8"/>
+            <text x="135" y="40" class="txt-ambiente" font-size="18">ESPECIFICACIONES</text>
+            <rect x="25" y="75" width="30" height="20" class="zona-social" stroke="#7f8c8d"/>
+            <text x="70" y="90" class="txt-leyenda">Zona Social</text>
+            <rect x="25" y="115" width="30" height="20" class="zona-intima" stroke="#7f8c8d"/>
+            <text x="70" y="130" class="txt-leyenda">Zona Íntima</text>
+            <rect x="25" y="155" width="30" height="20" class="zona-servicio" stroke="#7f8c8d"/>
+            <text x="70" y="170" class="txt-leyenda">Zona de Servicio</text>
+            <rect x="25" y="195" width="30" height="20" class="zona-exterior" stroke="#7f8c8d"/>
+            <text x="70" y="210" class="txt-leyenda">Zonas Abiertas / Tragaluz</text>
+            <rect x="25" y="235" width="30" height="20" class="zona-circulacion" stroke="#7f8c8d"/>
+            <text x="70" y="250" class="txt-leyenda">Circulaciones</text>
+            <circle cx="40" cy="285" r="6" class="punto-vertice"/>
+            <text x="70" y="290" class="txt-leyenda">Vértices de Zonas (A-T)</text>
+            <line x1="20" y1="315" x2="250" y2="315" stroke="#bdc3c7" stroke-width="1"/>
+            <text x="25" y="340" class="txt-leyenda" font-size="13">Escala Gráfica: 1:50</text>
+            <text x="25" y="360" class="txt-leyenda" font-size="13">Acotado: Metros (m)</text>
+            <text x="25" y="380" class="txt-leyenda" font-size="13">Área Total: 119.00 m²</text>
+          </g>
+
+          <g id="capa-servicios" class="capa-svg">
+            <rect x="720" y="1810" width="35" height="20" fill="#f1c40f" stroke="#e67e22" stroke-width="2"/>
+            <text x="737.5" y="1824" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">GAS</text>
+            <rect x="760" y="1810" width="35" height="20" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+            <text x="777.5" y="1824" font-size="10" font-weight="bold" fill="white" text-anchor="middle">LUZ</text>
+          </g>
+
+        </svg>
+    </div>
+
+    <script>
+        function alternarCapa(idCapa, botonElemento) {
+            const capa = document.getElementById(idCapa);
+            if (capa.classList.contains('capa-oculta')) {
+                capa.classList.remove('capa-oculta');
+                botonElemento.classList.add('activa');
+            } else {
+                capa.classList.add('capa-oculta');
+                botonElemento.classList.remove('activa');
+            }
+        }
+
+        function alternarModoOscuro(boton) {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                boton.textContent = '☀️ Modo Claro';
+            } else {
+                boton.textContent = '🌙 Modo Oscuro';
+            }
+        }
 
         function imprimirPlano() {
             window.print();
